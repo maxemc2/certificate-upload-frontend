@@ -234,13 +234,20 @@ export default {
               this.fileInfo[claim.division]['診斷書'] = [];            
             this.fileInfo[claim.division]['診斷書'].push({fileName: fileName,pdfUrl: claim.pdfUrl});
           }
-          else if(claim.pdf_type.includes('receipt')){
+          else if(claim.pdf_type.includes('inpatient_receipt')){
             if(!(claim.division in this.fileInfo))
               this.fileInfo[claim.division] = {};
-            if(!('收據' in this.fileInfo[claim.division]))
-              this.fileInfo[claim.division]['收據'] = [];
-            this.fileInfo[claim.division]['收據'].push({fileName: fileName,pdfUrl: claim.pdfUrl});
-          }          
+            if(!('住院收據' in this.fileInfo[claim.division]))
+              this.fileInfo[claim.division]['住院收據'] = [];
+            this.fileInfo[claim.division]['住院收據'].push({fileName: fileName,pdfUrl: claim.pdfUrl});
+          }
+          else if(claim.pdf_type.includes('outpatient_receipt')){
+            if(!(claim.division in this.fileInfo))
+              this.fileInfo[claim.division] = {};
+            if(!('門診+急診收據' in this.fileInfo[claim.division]))
+              this.fileInfo[claim.division]['門診+急診收據'] = [];
+            this.fileInfo[claim.division]['門診+急診收據'].push({fileName: fileName,pdfUrl: claim.pdfUrl});
+          }
         }
       };
     })

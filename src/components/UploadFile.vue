@@ -50,16 +50,18 @@
           <th>證書類別</th>
           <th></th>
         </tr>
-        <template v-for="department, department_key in fileField" :key="department_key">
-          <tr v-for="type, type_key, type_index in department" :key="type_key">
-            <td v-if="type_index == 0" :rowspan="Object.keys(department).length" class="department-col">{{ department_key }}</td>
-            <td class="type-col">{{ type_key }}</td>
-            <td class="btn-col">
-              <input v-for="file, file_index in type" :key="file_index" type="file" accept="application/pdf"
-              class="green-btn-border-text"  @change="getFile($event,department_key,type_key)">
-            </td>
-          </tr>
-        </template>
+        <tr v-for="type, type_key, type_index in fileField.type" :key="type_key">
+          <td v-if="type_index == 0" :rowspan="Object.keys(fileField.type).length" class="department-col">
+            <template v-for="department, department_index in fileField.division" :key="department_index">
+              {{ department }}<br>
+            </template>
+          </td>
+          <td class="type-col">{{ type_key }}</td>
+          <td class="btn-col">
+            <input v-for="file, file_index in type" :key="file_index" type="file" accept="application/pdf"
+            class="green-btn-border-text"  @change="getFile($event,type_key)">
+          </td>
+        </tr>
       </table>
     </div>
     <div class="send-block">
@@ -123,7 +125,10 @@ export default {
       userId: '',
       authorizedDate: '',
       authorizationUrl: '',
-      fileField: {},
+      fileField: {
+        division: [],
+        type: {}
+      },
       state: '正常',
       //Upload file record
       fileInfo: [],
@@ -172,7 +177,7 @@ export default {
         name: 'claimList'
       });
     },
-    getFile(event,department,type){
+    getFile(event,type,department='不分科'){
       var file = event.target.files;
       for(var i = 0; i < file.length; i++){
         var fileName = file[i].name;
@@ -186,13 +191,16 @@ export default {
             if(type.includes('診斷書')){
               this.fileInfo.push({pdf_type: "diagnosis",division: department,fileName: fileName});
             }
-            else if(type.includes('收據')){
-              this.fileInfo.push({pdf_type: "receipt",division: department,fileName: fileName});
+            else if(type.includes('門診+急診收據')){
+              this.fileInfo.push({pdf_type: "outpatient_receipt",division: department,fileName: fileName});
+            }
+            else if(type.includes('住院收據')){
+              this.fileInfo.push({pdf_type: "inpatient_receipt",division: department,fileName: fileName});
             }
           }
         }
       }
-      this.fileField[department][type].push('file');
+      this.fileField.type[type].push('file');
     },
     sendCheck(){
       this.currentModal = new Modal(select('#checkModal'));
@@ -319,26 +327,26 @@ export default {
     this.authorizedDate = this.$route.params.authorizedDate;
     this.authorizationUrl = this.$route.params.authorizationCertificate;
     this.$route.params.division.forEach((division) => {
-      this.fileField[division] = {};
+      this.fileField.division.push(division);
     })
     this.$route.params.type.forEach((type) => {
       switch(type){
         case 'diagnosis':
-          for(var key in this.fileField){
-            this.fileField[key]['診斷書'] = [];
-            this.fileField[key]['診斷書'].push('file');
-          }
+          this.fileField.type['診斷書'] = [];
+          this.fileField.type['診斷書'].push('file');
+          break;        
+        case 'inpatient_receipt':
+          this.fileField.type['住院收據'] = [];
+          this.fileField.type['住院收據'].push('file');
           break;
         case 'outpatient_receipt':
-        case 'inpatient_receipt':
         case 'emergency_receipt':
-          for(var key in this.fileField){
-            this.fileField[key]['收據'] = [];
-            this.fileField[key]['收據'].push('file');
-          }
+          this.fileField.type['門診+急診收據'] = [];
+          this.fileField.type['門診+急診收據'].push('file');
           break;
       }
     })
+    console.log(this.$route.params, this.fileField);
   },
   beforeUpdate(){    
   }

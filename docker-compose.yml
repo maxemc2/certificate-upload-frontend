@@ -1,0 +1,15 @@
+version: '3'
+services:
+  upload-web:                        # 前端node容器(運行nginx中的Vue項目)
+    restart: always                     # 重啟策略: 容器退出時總是重啟容器
+    build:
+      context: ./                       # 指定設定上下文根目錄，然後以該目錄為準指定Dockerfile
+      dockerfile: Dockerfile
+    ports:
+      - "80:8000"                      # 映射端口
+    networks:
+      - upload-network-web        # 設置網路
+
+networks:
+  upload-network-web:
+    driver: bridge
